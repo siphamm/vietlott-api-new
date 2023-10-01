@@ -25,11 +25,22 @@ def get_data(lottery_type: str = "645"):
     return results
 
 
+# @app.get("/results/{lottery_type}")
+# def get_results(lottery_type: str):
+#     drawings = get_data(lottery_type)
+#     return {"type": lottery_type,
+#             "results": drawings}
+
 @app.get("/results/{lottery_type}")
 def get_results(lottery_type: str):
     drawings = get_data(lottery_type)
-    return {"type": lottery_type,
-            "results": drawings}
+    return [
+        {
+            "drawingId": idx + 1,
+            "drawingDate": d[0],
+            "drawingResult": " ".join(d[1])
+        } for idx, d in enumerate(drawings)
+    ]
 
 
 @app.post("/results/")
