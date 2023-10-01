@@ -33,7 +33,11 @@ def get_data(lottery_type: str = "645"):
 
 @app.get("/results/{lottery_type}")
 def get_results(lottery_type: str):
-    drawings = get_data(lottery_type)
+    lottery_type_to_name = {
+        "vietlott645": "645",
+        "vietlott655": "655"
+    }
+    drawings = get_data(lottery_type_to_name[lottery_type])
     return [
         {
             "drawingId": idx + 1,
