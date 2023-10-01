@@ -1,0 +1,44 @@
+import csv
+from typing import Union
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+
+class AddResultInput(BaseModel):
+    lottery_type: str
+    date: str
+    result: str
+
+
+def get_data(lottery_type: str = "645"):
+    results = []
+    with open('data/vietlott-results.csv') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            [lDate, lType, lResult] = row
+            if lType == lottery_type:
+                results.append([lDate, lResult.split()])
+
+    results.sort(key=lambda r: r[0], reverse=True)
+    return results
+
+
+@app.get("/results/{lottery_type}")
+def get_results(lottery_type: str):
+    drawings = get_data(lottery_type)
+    return {"type": lottery_type,
+            "results": drawings}
+
+
+@app.post("/results/")
+def add_result(add_result_input: AddResultInput):
+    with open('data/vietlott-results.csv', 'a') as f:
+        writer = csv.writer(f)
+        writer.writerow(
+            [add_result_input.date,
+             add_result_input.lottery_type,
+             add_result_input.result])
+
+    return add_result_input
