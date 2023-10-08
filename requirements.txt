@@ -3,4 +3,4 @@ fastapi
 uvicorn[standard]
 pydantic
 python-dotenv
-postgresql
+py-postgresql
