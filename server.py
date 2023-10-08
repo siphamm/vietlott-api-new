@@ -31,8 +31,9 @@ def get_db_connection():
 
 def get_data(lottery_type: str = "645"):
     results = []
+    db = get_db_connection()
+
     try:
-        db = get_db_connection()
         results = db.query(
             f"SELECT drawing_date, lottery_type, drawing_result FROM results where lottery_type='{lottery_type}' ORDER BY drawing_date DESC;")
 
@@ -70,8 +71,9 @@ def get_results(lottery_type: str):
 @app.post("/results/")
 def add_result(add_result_input: AddResultInput):
     success = True
+    db = get_db_connection()
+
     try:
-        db = get_db_connection()
         insert_result = db.prepare(
             "INSERT INTO results(drawing_date, lottery_type, drawing_result) VALUES ($1, $2, $3)")
 
