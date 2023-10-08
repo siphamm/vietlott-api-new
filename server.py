@@ -1,8 +1,14 @@
 import csv
+import os
 from typing import Union
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import pandas as pd
+from postgresql import open as postgres_open
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI()
 
@@ -20,24 +26,32 @@ class AddResultInput(BaseModel):
     result: str
 
 
+def get_db_connection():
+    db_url = os.environ["POSTGRES_DB_CONNECTION_URL"]
+    db = postgres_open(db_url)
+    return db
+
+
 def get_data(lottery_type: str = "645"):
     results = []
-    with open('data/vietlott-results.csv') as f:
-        reader = csv.reader(f)
-        for row in reader:
-            [lDate, lType, lResult] = row
-            if lType == lottery_type:
-                results.append([lDate, lResult.split()])
+    try:
+        db = get_db_connection()
+        results = db.query(
+            f"SELECT drawing_date, lottery_type, drawing_result FROM results where lottery_type='{lottery_type}' ORDER BY drawing_date DESC;")
 
-    results.sort(key=lambda r: r[0], reverse=True)
+        print(results)
+
+    finally:
+        db.close()
+
     return results
-
 
 # @app.get("/results/{lottery_type}")
 # def get_results(lottery_type: str):
 #     drawings = get_data(lottery_type)
 #     return {"type": lottery_type,
 #             "results": drawings}
+
 
 @app.get("/results/{lottery_type}")
 def get_results(lottery_type: str):
@@ -46,22 +60,30 @@ def get_results(lottery_type: str):
         "vietlott655": "655"
     }
     drawings = get_data(lottery_type_to_name[lottery_type])
+
     return [
         {
             "drawingId": idx + 1,
-            "drawingDate": d[0],
-            "drawingResult": " ".join(d[1])
+            "drawingDate": d["drawing_date"],
+            "drawingResult": d["drawing_result"]
         } for idx, d in enumerate(drawings)
     ]
 
 
 @app.post("/results/")
 def add_result(add_result_input: AddResultInput):
-    with open('data/vietlott-results.csv', 'a') as f:
-        writer = csv.writer(f)
-        writer.writerow(
-            [add_result_input.date,
-             add_result_input.lottery_type,
-             add_result_input.result])
+    success = True
+    try:
+        db = get_db_connection()
+        insert_result = db.prepare(
+            "INSERT INTO results(drawing_date, lottery_type, drawing_result) VALUES ($1, $2, $3)")
 
-    return add_result_input
+        insert_result(
+            add_result_input.date, add_result_input.lottery_type, add_result_input.result)
+    except RuntimeError as e:
+        print(e)
+        success = False
+    finally:
+        db.close()
+
+    return add_result_input if success else None
