@@ -3,4 +3,5 @@ fastapi
 uvicorn[standard]
 pydantic
 python-dotenv
-py-postgresqlpsycopg2
+py-postgresql
+psycopg2-binary
