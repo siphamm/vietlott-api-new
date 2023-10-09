@@ -2,8 +2,8 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from postgresql import open as postgres_open
 from dotenv import load_dotenv
+import psycopg2
 
 load_dotenv()
 
@@ -24,22 +24,31 @@ class AddResultInput(BaseModel):
 
 
 def get_db_connection():
-    db_url = os.environ["POSTGRES_DB_CONNECTION_URL"]
-    db = postgres_open(db_url)
-    return db
+    conn = psycopg2.connect(database=os.environ["POSTGRES_DB_NAME"],
+                            host=os.environ["POSTGRES_HOST"],
+                            user=os.environ["POSTGRES_USER"],
+                            password=os.environ["POSTGRES_PASSWORD"])
+    return conn
+    # db_url = os.environ["POSTGRES_DB_CONNECTION_URL"]
+    # db = postgres_open(db_url)
+    # return db
 
 
 def get_data(lottery_type: str = "645"):
     results = []
     db = get_db_connection()
+    cur = db.cursor()
 
     try:
-        results = db.query(
-            f"SELECT drawing_date, lottery_type, drawing_result FROM results where lottery_type='{lottery_type}' ORDER BY drawing_date DESC;")
+        # results = db.query(
+        #     f"SELECT drawing_date, lottery_type, drawing_result FROM results where lottery_type='{lottery_type}' ORDER BY drawing_date DESC;")
+        cur.execute(
+            "SELECT drawing_date, drawing_result FROM results where lottery_type=%s ORDER BY drawing_date DESC;", [lottery_type])
 
-        print(results)
+        results = cur.fetchall()
 
     finally:
+        cur.close()
         db.close()
 
     return results
@@ -62,9 +71,9 @@ def get_results(lottery_type: str):
     return [
         {
             "drawingId": idx + 1,
-            "drawingDate": d["drawing_date"],
-            "drawingResult": d["drawing_result"]
-        } for idx, d in enumerate(drawings)
+            "drawingDate": drawing_date,
+            "drawingResult": drawing_result
+        } for idx, [drawing_date, drawing_result] in enumerate(drawings)
     ]
 
 
@@ -72,17 +81,23 @@ def get_results(lottery_type: str):
 def add_result(add_result_input: AddResultInput):
     success = True
     db = get_db_connection()
+    cur = db.cursor()
 
     try:
-        insert_result = db.prepare(
-            "INSERT INTO results(drawing_date, lottery_type, drawing_result) VALUES ($1, $2, $3)")
+        # insert_result = db.prepare(
+        #     "INSERT INTO results(drawing_date, lottery_type, drawing_result) VALUES ($1, $2, $3)")
 
-        insert_result(
-            add_result_input.date, add_result_input.lottery_type, add_result_input.result)
+        # insert_result(
+        #     add_result_input.date, add_result_input.lottery_type, add_result_input.result)
+
+        cur.execute("INSERT INTO results (drawing_date, lottery_type, drawing_result) VALUES (%s, %s, %s)", [
+                    add_result_input.date, add_result_input.lottery_type, add_result_input.result])
+        db.commit()
     except RuntimeError as e:
         print(e)
         success = False
     finally:
+        cur.close()
         db.close()
 
     return add_result_input if success else None
