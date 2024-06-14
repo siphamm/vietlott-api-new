@@ -1,6 +1,8 @@
 Run server
+`uvicorn server:app --host 0.0.0.0 --port 80`
 
-`uvicorn main:app --host 0.0.0.0 --port 80`
+Update the app by pushing to github directly to trigger a redeploy
+
 
 Links:
 - Ket qua 645: https://vietlott.vn/vi/trung-thuong/ket-qua-trung-thuong/645

@@ -6,7 +6,7 @@ def test_add_result():
     data = {
         "lottery_type": "645",
         "date": "2025-01-01",
-        "result": "01 02 03 04 05 06"
+        "result": "01 02 03 04 05 06 10 19"
     }
     res = requests.post(url=url, json=data)
     print(res.json())

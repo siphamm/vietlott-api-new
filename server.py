@@ -49,6 +49,19 @@ def get_drawing_results(lottery_type: str = "645"):
     return results
 
 
+def normalize_drawing_result(drawing_result: str):
+    # Normalize the drawing result string by doing the following:
+    # 1. Remove all spaces and non-digit characters
+    # 2. Ensure there are 10 or 12 digits in the string
+    # 3. Add a space after every 2 digits
+    # 4. Return the normalized string
+    drawing_result = "".join([c for c in drawing_result if c.isdigit()])
+    drawing_result = " ".join([drawing_result[i:i + 2]
+                               for i in range(0, len(drawing_result), 2)])
+
+    return drawing_result
+
+
 @app.get("/results/{lottery_type}")
 def get_results(lottery_type: str):
     # We're doing it here because the front-end is still using this format
@@ -80,8 +93,9 @@ def add_result(add_result_input: AddResultInput):
     cur = db.cursor()
 
     try:
+        validate_input(add_result_input)
         cur.execute("INSERT INTO results (drawing_date, lottery_type, drawing_result) VALUES (%s, %s, %s)", [
-                    add_result_input.date, add_result_input.lottery_type, add_result_input.result])
+                    add_result_input.date, add_result_input.lottery_type, normalize_drawing_result(add_result_input.result)])
         db.commit()
     except RuntimeError as e:
         print(e)
@@ -91,3 +105,17 @@ def add_result(add_result_input: AddResultInput):
         db.close()
 
     return add_result_input if success else None
+
+
+def validate_input(add_result_input: AddResultInput):
+    if add_result_input.lottery_type not in ["645", "655"]:
+        raise RuntimeError("Invalid lottery type")
+
+    if add_result_input.lottery_type == "645" and len(normalize_drawing_result(add_result_input.result)) != 17:
+        raise RuntimeError("Invalid result length for 645")
+
+    if add_result_input.lottery_type == "655" and len(normalize_drawing_result(add_result_input.result)) != 20:
+        raise RuntimeError("Invalid result length for 655")
+
+    if len(add_result_input.date) != 10:
+        raise RuntimeError("Invalid date length")
