@@ -94,8 +94,10 @@ def add_result(add_result_input: AddResultInput):
 
     try:
         validate_input(add_result_input)
+        normalized_drawing_result = normalize_drawing_result(
+            add_result_input.result)
         cur.execute("INSERT INTO results (drawing_date, lottery_type, drawing_result) VALUES (%s, %s, %s)", [
-                    add_result_input.date, add_result_input.lottery_type, normalize_drawing_result(add_result_input.result)])
+                    add_result_input.date, add_result_input.lottery_type, normalized_drawing_result])
         db.commit()
     except RuntimeError as e:
         print(e)
@@ -104,7 +106,12 @@ def add_result(add_result_input: AddResultInput):
         cur.close()
         db.close()
 
-    return add_result_input if success else None
+    return {
+        "drawing_result": normalized_drawing_result,
+        "success": success,
+        "date": add_result_input.date,
+        "lottery_type": add_result_input.lottery_type
+    } if success else None
 
 
 def validate_input(add_result_input: AddResultInput):
