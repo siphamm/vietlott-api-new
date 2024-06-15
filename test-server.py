@@ -18,6 +18,13 @@ def test_get_result():
     print(res.json())
 
 
+def test_get_result_by_date():
+    url = "http://0.0.0.0:80/results/645/2024-06-14"
+    res = requests.get(url=url)
+    print(res.json())
+
+
 if __name__ == "__main__":
     # test_get_result()
-    test_add_result()
+    # test_add_result()
+    test_get_result_by_date()

@@ -113,6 +113,50 @@ def add_result(add_result_input: AddResultInput):
         "lottery_type": add_result_input.lottery_type
     } if success else None
 
+# Add a new endpoint to query all results given a drawing date and lottery type
+
+
+@app.get("/results/{lottery_type}/{drawing_date}")
+def get_result_by_date(lottery_type: str, drawing_date: str):
+    results = []
+    db = get_db_connection()
+    cur = db.cursor()
+
+    try:
+        cur.execute(
+            "SELECT id, drawing_date, drawing_result FROM results WHERE drawing_date = %s AND lottery_type = %s;", [drawing_date, lottery_type])
+
+        results = cur.fetchall()
+
+    finally:
+        cur.close()
+        db.close()
+
+    return [
+        {
+            "drawingId": drawing_id,
+            "drawingDate": drawing_date,
+            "drawingResult": drawing_result
+        } for idx, [drawing_id, drawing_date, drawing_result] in enumerate(results)
+    ]
+
+
+@app.delete("/results/{drawing_id}")
+def delete_result(drawing_id: int):
+    success = True
+    db = get_db_connection()
+    cur = db.cursor()
+    try:
+        cur.execute("DELETE FROM results WHERE id = %s", [drawing_id])
+        db.commit()
+    except Exception as e:
+        print(e)
+        success = False
+    finally:
+        cur.close()
+        db.close()
+    return {"success": success}
+
 
 def validate_input(add_result_input: AddResultInput):
     if add_result_input.lottery_type not in ["645", "655"]:
