@@ -36,7 +36,7 @@ def get_drawing_results(lottery_type: str = "645"):
 
     try:
         cur.execute(
-            "SELECT drawing_date, drawing_result FROM results where lottery_type=%s ORDER BY drawing_date DESC;", [lottery_type])
+            "SELECT id, drawing_date, drawing_result FROM results where lottery_type=%s ORDER BY drawing_date DESC LIMIT 500;", [lottery_type])
 
         results = cur.fetchall()
 

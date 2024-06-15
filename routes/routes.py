@@ -18,10 +18,10 @@ def get_results(lottery_type: str):
 
     return [
         {
-            "drawingId": idx + 1,
+            "drawingId": id,
             "drawingDate": drawing_date,
             "drawingResult": drawing_result
-        } for idx, [drawing_date, drawing_result] in enumerate(drawings)
+        } for idx, [id, drawing_date, drawing_result] in enumerate(drawings)
     ]
 
 

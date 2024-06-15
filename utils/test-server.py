@@ -25,6 +25,6 @@ def test_get_result_by_date():
 
 
 if __name__ == "__main__":
-    # test_get_result()
-    test_add_result()
+    test_get_result()
+    # test_add_result()
     # test_get_result_by_date()
