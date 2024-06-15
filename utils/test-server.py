@@ -6,7 +6,7 @@ def test_add_result():
     data = {
         "lottery_type": "645",
         "date": "2025-01-01",
-        "result": "01 02 03 04 05 06 10 19"
+        "result": "01 02 03 04 05 06 10"
     }
     res = requests.post(url=url, json=data)
     print(res.json())
@@ -26,5 +26,5 @@ def test_get_result_by_date():
 
 if __name__ == "__main__":
     # test_get_result()
-    # test_add_result()
-    test_get_result_by_date()
+    test_add_result()
+    # test_get_result_by_date()
