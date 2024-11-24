@@ -1,3 +1,9 @@
+# Activate venv
+`source venv/bin/activate`
+
+# Install dependencies
+`pip install -r requirements.txt`
+
 # Run server
 `uvicorn server:app --host 0.0.0.0 --port 80`
 

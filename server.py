@@ -1,9 +1,6 @@
-import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from database.database import get_db_connection
-from models.models import AddResultInput
 from routes.routes import router
 
 load_dotenv()

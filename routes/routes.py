@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from database.database import get_db_connection
 from models.models import AddResultInput
-from utils.utils import normalize_drawing_result, get_drawing_results, validate_input
+from utils.utils import normalize_drawing_result, get_drawing_results, validate_input, get_lottery_type
 
 router = APIRouter()
 
@@ -40,9 +40,10 @@ def add_result(add_result_input: AddResultInput):
         validate_input(add_result_input)
         normalized_drawing_result = normalize_drawing_result(
             add_result_input.result)
+        lottery_type = get_lottery_type(normalized_drawing_result)
 
         cur.execute("INSERT INTO results (drawing_date, lottery_type, drawing_result) VALUES (%s, %s, %s)", [
-                    add_result_input.date, add_result_input.lottery_type, normalized_drawing_result])
+                    add_result_input.date, lottery_type, normalized_drawing_result])
         db.commit()
     except RuntimeError as e:
         print(e)
@@ -55,7 +56,7 @@ def add_result(add_result_input: AddResultInput):
         "drawing_result": normalized_drawing_result,
         "success": success,
         "date": add_result_input.date,
-        "lottery_type": add_result_input.lottery_type
+        "lottery_type": lottery_type
     } if success else None
 
 # Add a new endpoint to query all results given a drawing date and lottery type

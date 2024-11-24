@@ -16,17 +16,19 @@ def normalize_drawing_result(drawing_result: str):
 
 
 def validate_input(add_result_input: AddResultInput):
-    if add_result_input.lottery_type not in ["645", "655"]:
-        raise RuntimeError("Invalid lottery type")
-
-    if add_result_input.lottery_type == "645" and len(normalize_drawing_result(add_result_input.result)) != 17:
-        raise RuntimeError("Invalid result length for 645")
-
-    if add_result_input.lottery_type == "655" and len(normalize_drawing_result(add_result_input.result)) != 20:
-        raise RuntimeError("Invalid result length for 655")
+    if len(normalize_drawing_result(add_result_input.result)) != 17 and len(normalize_drawing_result(add_result_input.result)) != 20:
+        raise RuntimeError("Invalid result length. Should be 17 or 20")
 
     if len(add_result_input.date) != 10:
         raise RuntimeError("Invalid date length")
+
+
+def get_lottery_type(normalized_result_str: str):
+    if len(normalized_result_str) == 17:
+        return "645"
+
+    if len(normalized_result_str) == 20:
+        return "655"
 
 
 def get_drawing_results(lottery_type: str = "645"):
