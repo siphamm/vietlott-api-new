@@ -12,7 +12,9 @@ def get_results(lottery_type: str):
     # Other APIs should use only 645 or 655
     lottery_type_to_name = {
         "vietlott645": "645",
-        "vietlott655": "655"
+        "vietlott655": "655",
+        "645": "645",
+        "655": "655",
     }
     drawings = get_drawing_results(lottery_type_to_name[lottery_type])
 
