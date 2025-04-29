@@ -9,6 +9,13 @@ def test_add_result():
     }
     res = requests.post(url=url, json=data)
     print(res.json())
+    return res
+
+
+def test_add_result_already_exists():
+    test_add_result()
+    res = test_add_result()
+    print(res.json())
 
 
 def test_get_result(type: str = '645'):
@@ -18,7 +25,7 @@ def test_get_result(type: str = '645'):
 
 
 def test_get_result_by_date():
-    url = "http://0.0.0.0:80/results/645/2024-06-14"
+    url = "http://0.0.0.0:80/results/645/2025-01-01"
     res = requests.get(url=url)
     print(res.json())
 
@@ -30,7 +37,9 @@ def test_delete_result(date: str):
 
 
 if __name__ == "__main__":
-    test_get_result("655")
+    # test_get_result("655")
     # test_add_result()
     # test_get_result_by_date()
-    # test_delete_result("3006")
+    # test_delete_result("3038")
+    # test_add_result_already_exists()
+    pass

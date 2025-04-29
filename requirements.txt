@@ -5,3 +5,4 @@ pydantic
 python-dotenv
 py-postgresql
 psycopg2-binary
+psycopg2

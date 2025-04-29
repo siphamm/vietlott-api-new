@@ -35,14 +35,22 @@ def get_stats(lottery_type: str = "645"):
 @router.post("/results/")
 def add_result(add_result_input: AddResultInput):
     success = True
+    error = None
     db = get_db_connection()
     cur = db.cursor()
 
     try:
         validate_input(add_result_input)
+
         normalized_drawing_result = normalize_drawing_result(
             add_result_input.result)
         lottery_type = get_lottery_type(normalized_drawing_result)
+
+        # if the results for this date and lottery type already exists, we should raise an error
+        existing_results = get_result_by_date(
+            lottery_type, add_result_input.date)
+        if len(existing_results) > 0:
+            raise RuntimeError("Result for this date already exists")
 
         cur.execute("INSERT INTO results (drawing_date, lottery_type, drawing_result) VALUES (%s, %s, %s)", [
                     add_result_input.date, lottery_type, normalized_drawing_result])
@@ -50,6 +58,7 @@ def add_result(add_result_input: AddResultInput):
     except RuntimeError as e:
         print(e)
         success = False
+        error = str(e)
     finally:
         cur.close()
         db.close()
@@ -59,7 +68,10 @@ def add_result(add_result_input: AddResultInput):
         "success": success,
         "date": add_result_input.date,
         "lottery_type": lottery_type
-    } if success else None
+    } if success else {
+        "success": False,
+        "error": error
+    }
 
 # Add a new endpoint to query all results given a drawing date and lottery type
 
